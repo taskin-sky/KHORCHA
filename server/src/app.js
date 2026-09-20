@@ -1,0 +1,16 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import authRoutes from './routes/auth.js'; import categoryRoutes from './routes/categories.js'; import planRoutes from './routes/plans.js'; import transactionRoutes from './routes/transactions.js'; import tripRoutes from './routes/trips.js'; import savingRoutes from './routes/savings.js'; import reportRoutes from './routes/reports.js'; import userRoutes from './routes/users.js';
+import { auth } from './middleware/auth.js';
+import sheetRoutes from './routes/sheet.js';
+import familyRoutes from './routes/family.js';
+import incomeRoutes from './routes/income.js';
+export const app = express();
+const sanitizeObject = value => { if (!value || typeof value !== 'object') return value; for (const key of Object.keys(value)) { if (key.startsWith('$') || key.includes('.')) delete value[key]; else sanitizeObject(value[key]); } return value; };
+app.use(helmet()); app.use(cors({ origin: (origin, cb) => !origin || (process.env.CLIENT_URL || '').split(',').includes(origin) ? cb(null, true) : cb(new Error('Origin not allowed')), credentials: true })); app.use(express.json({ limit: '100kb' })); app.use((req, _res, next) => { sanitizeObject(req.body); next(); }); if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
+app.get('/api/health', (_req, res) => res.json({ success: true, message: 'Khorocha API is healthy', data: { status: 'ok' } }));
+app.use('/api/auth', authRoutes); app.use('/api/categories', auth, categoryRoutes); app.use('/api/plans', auth, planRoutes); app.use('/api/transactions', auth, transactionRoutes); app.use('/api/sheet', auth, sheetRoutes); app.use('/api/income', auth, incomeRoutes); app.use('/api/family', auth, familyRoutes); app.use('/api/trips', auth, tripRoutes); app.use('/api/savings', auth, savingRoutes); app.use('/api/dashboard/summary', auth, (req, res, next) => { req.url = '/dashboard'; reportRoutes(req, res, next); }); app.use('/api/reports', auth, (req, _res, next) => { req.url = '/reports' + req.url; next(); }, reportRoutes); app.use('/api/users', auth, userRoutes);
+app.use((_req, res) => res.status(404).json({ success: false, message: 'Route not found', errors: [] }));
+app.use((err, _req, res, _next) => { const duplicate = err?.code === 11000; const status = duplicate ? 409 : err.status || 500; const message = duplicate ? 'A record with these details already exists' : status === 500 ? 'Something went wrong' : err.message; if (status === 500 && process.env.NODE_ENV !== 'test') console.error(err); res.status(status).json({ success: false, message, errors: err.errors || [] }); });

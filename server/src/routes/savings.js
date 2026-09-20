@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { SavingGoal, Transaction } from '../models/index.js';
+import { ApiError, asyncHandler, ok } from '../utils/index.js';
+import { ensureSystemCategories } from '../services/systemCategories.js';
+const router = Router();
+router.use(asyncHandler(async (req, _res, next) => { await ensureSystemCategories(req.user._id); next(); }));
+router.get('/goals', asyncHandler(async (req, res) => ok(res, await SavingGoal.find({ userId: req.user._id }))));
+router.post('/goals', asyncHandler(async (req, res) => ok(res, await SavingGoal.create({ ...req.body, userId: req.user._id }), 'Saving goal created', 201)));
+router.patch('/goals/:id', asyncHandler(async (req, res) => { delete req.body.userId; const x = await SavingGoal.findOneAndUpdate({ _id: req.params.id, userId: req.user._id }, req.body, { new: true, runValidators: true }); if (!x) throw new ApiError(404, 'Goal not found'); ok(res, x, 'Goal updated'); }));
+router.delete('/goals/:id', asyncHandler(async (req, res) => { const x = await SavingGoal.findOneAndDelete({ _id: req.params.id, userId: req.user._id }); if (!x) throw new ApiError(404, 'Goal not found'); ok(res, x, 'Goal deleted'); }));
+router.get('/summary', asyncHandler(async (req, res) => { const history = await Transaction.aggregate([{ $match: { userId: req.user._id, type: 'saving' } }, { $group: { _id: { year: '$year', month: '$month' }, amount: { $sum: '$amount' } } }, { $sort: { '_id.year': 1, '_id.month': 1 } }]); ok(res, { total: history.reduce((n, x) => n + x.amount, 0), history, goals: await SavingGoal.find({ userId: req.user._id }) }); }));
+export default router;

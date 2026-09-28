@@ -39,6 +39,13 @@ app.use((req, _res, next) => {
   next();
 });
 if (process.env.NODE_ENV !== "test") app.use(morgan("dev"));
+app.get("/", (_req, res) =>
+  res.json({
+    success: true,
+    message: "Khorocha API is running",
+    data: { health: "/api/health" },
+  }),
+);
 app.get("/api/health", (_req, res) =>
   res.json({
     success: true,

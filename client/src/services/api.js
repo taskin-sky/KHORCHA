@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const API_BASE_URL = (
-  import.meta.env.taskin_API_BASE_URL || "http://localhost:5000/api"
+  import.meta.env.TASKIN_API_BASE_URL || "http://localhost:5000/api"
 ).replace(/\/+$/, "");
 
 export const api = axios.create({

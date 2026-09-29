@@ -15,6 +15,13 @@ import sheetRoutes from "./routes/sheet.js";
 import familyRoutes from "./routes/family.js";
 import incomeRoutes from "./routes/income.js";
 export const app = express();
+const normalizeOrigin = (value) => value.trim().replace(/\/$/, "");
+const isAllowedOrigin = (origin) =>
+  (process.env.CLIENT_URL || "")
+    .split(",")
+    .map(normalizeOrigin)
+    .filter(Boolean)
+    .includes(normalizeOrigin(origin));
 const sanitizeObject = (value) => {
   if (!value || typeof value !== "object") return value;
   for (const key of Object.keys(value)) {
@@ -26,10 +33,12 @@ const sanitizeObject = (value) => {
 app.use(helmet());
 app.use(
   cors({
-    origin: (origin, cb) =>
-      !origin || (process.env.CLIENT_URL || "").split(",").includes(origin)
-        ? cb(null, true)
-        : cb(new Error("Origin not allowed")),
+    origin: (origin, cb) => {
+      if (!origin || isAllowedOrigin(origin)) return cb(null, true);
+      const error = new Error("Origin not allowed");
+      error.status = 403;
+      return cb(error);
+    },
     credentials: true,
   }),
 );

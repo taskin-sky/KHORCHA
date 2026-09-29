@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Spinner } from './components/UI';
 import AppLayout from './layouts/AppLayout';

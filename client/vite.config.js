@@ -4,18 +4,18 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, ".", "");
-  const apiBaseUrl = env.API_BASE_URL?.trim();
+  const apiBaseUrl = env.taskin_API_BASE_URL?.trim();
 
   if (mode === "production") {
     if (!apiBaseUrl) {
       throw new Error(
-        "API_BASE_URL is required for a production deployment",
+        "VITE_API_BASE_URL is required for a production deployment",
       );
     }
 
     const parsedApiUrl = new URL(apiBaseUrl);
     if (parsedApiUrl.protocol !== "https:") {
-      throw new Error("API_BASE_URL must use HTTPS in production");
+      throw new Error("VITE_API_BASE_URL must use HTTPS in production");
     }
   }
 

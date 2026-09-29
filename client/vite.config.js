@@ -4,7 +4,7 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, ".", "");
-  const apiBaseUrl = env.TASKIN_API_BASE_URL?.trim();
+  const apiBaseUrl = env.VITE_API_BASE_URL?.trim();
 
   if (mode === "production") {
     if (!apiBaseUrl) {

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const API_BASE_URL = (
-  import.meta.env.TASKIN_API_BASE_URL || "http://localhost:5000/api"
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
 ).replace(/\/+$/, "");
 
 export const api = axios.create({
@@ -13,7 +13,11 @@ api.interceptors.request.use((config) => {
   const token =
     localStorage.getItem("khorocha-token") ||
     sessionStorage.getItem("khorocha-token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
   return config;
 });
 
@@ -22,12 +26,13 @@ api.interceptors.response.use(
   (error) => {
     if (
       error.response?.status === 401 &&
-      !location.pathname.match(/^\/(login|register)/)
+      !/^\/(login|register)/.test(location.pathname)
     ) {
       localStorage.removeItem("khorocha-token");
       sessionStorage.removeItem("khorocha-token");
       location.assign("/login");
     }
+
     return Promise.reject(error);
   },
 );

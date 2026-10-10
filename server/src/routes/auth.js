@@ -10,6 +10,11 @@ const router = Router();
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: true, legacyHeaders: false });
 const registerSchema = z.object({ name: z.string().min(2).max(60), email: z.string().email(), password: z.string().min(8).max(72) });
 const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1), remember: z.boolean().optional() });
+const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+  forgetKey: z.string().min(1),
+  newPassword: z.string().min(8).max(72),
+});
 const sign = (id, remember = true) => jwt.sign({ sub: id }, process.env.JWT_SECRET, { expiresIn: remember ? (process.env.JWT_EXPIRES_IN || '7d') : '12h' });
 router.post('/register', limiter, asyncHandler(async (req, res) => {
   const parsed = registerSchema.safeParse(req.body); if (!parsed.success) throw new ApiError(422, 'Validation failed', parsed.error.flatten().fieldErrors);
@@ -22,6 +27,17 @@ router.post('/login', limiter, asyncHandler(async (req, res) => {
   const user = await User.findOne({ email: parsed.data.email.toLowerCase() }).select('+passwordHash');
   if (!user || !(await bcrypt.compare(parsed.data.password, user.passwordHash))) throw new ApiError(401, 'Invalid email or password');
   user.passwordHash = undefined; ok(res, { user, token: sign(user.id, parsed.data.remember) }, 'Welcome back');
+}));
+router.post('/forgot-password', limiter, asyncHandler(async (req, res) => {
+  const parsed = forgotPasswordSchema.safeParse(req.body);
+  if (!parsed.success) throw new ApiError(422, 'Validation failed', parsed.error.flatten().fieldErrors);
+  const forgetKey = process.env.FORGOT_PASSWORD_KEY || 'Taskin/2429';
+  const user = await User.findOne({ email: parsed.data.email.toLowerCase() }).select('+passwordHash');
+  if (!user || parsed.data.forgetKey !== forgetKey) throw new ApiError(401, 'Invalid email or forget key');
+  user.passwordHash = await bcrypt.hash(parsed.data.newPassword, 12);
+  await user.save();
+  user.passwordHash = undefined;
+  ok(res, { user, token: sign(user.id) }, 'Password changed successfully');
 }));
 router.get('/me', auth, (req, res) => ok(res, { user: req.user }));
 router.post('/refresh', auth, (req, res) => ok(res, { token: sign(req.user.id) }, 'Session refreshed'));

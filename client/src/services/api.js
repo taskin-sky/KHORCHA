@@ -26,7 +26,7 @@ api.interceptors.response.use(
   (error) => {
     if (
       error.response?.status === 401 &&
-      !/^\/(login|register)/.test(location.pathname)
+      !/^\/(login|register|forgot-password)/.test(location.pathname)
     ) {
       localStorage.removeItem("khorocha-token");
       sessionStorage.removeItem("khorocha-token");

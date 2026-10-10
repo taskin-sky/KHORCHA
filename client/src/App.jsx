@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { Spinner } from './components/UI';
 import AppLayout from './layouts/AppLayout';
 import { AuthPage } from './pages/Auth';
+import ForgotPassword from './pages/ForgotPassword';
 import MonthlySheet from './pages/MonthlySheet';
 import NotFound from './pages/NotFound';
 import Onboarding from './pages/Onboarding';
@@ -30,6 +31,7 @@ export default function App() {
     <Route path="/" element={<Navigate to="/dashboard" replace />} />
     <Route path="/login" element={<AuthPage mode="login" />} />
     <Route path="/register" element={<AuthPage mode="register" />} />
+    <Route path="/forgot-password" element={<ForgotPassword />} />
     <Route path="/onboarding" element={<Protected><Onboarding /></Protected>} />
     <Route element={<Protected><AppLayout /></Protected>}>
       <Route path="/dashboard" element={<MonthlySheet />} />

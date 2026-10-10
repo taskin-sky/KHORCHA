@@ -1193,6 +1193,24 @@ label em {
   color: var(--primary2);
   font-weight: 800;
 }
+.auth-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.auth-options .check {
+  margin: 0;
+}
+.forgot-link {
+  color: var(--primary2);
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.forgot-link:hover {
+  text-decoration: underline;
+}
 .onboard {
   min-height: 100vh;
 }

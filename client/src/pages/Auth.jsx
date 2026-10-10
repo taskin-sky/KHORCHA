@@ -111,15 +111,15 @@ export function AuthPage({ mode }) {
           <em>{errors.password?.message}</em>
         </label>
         {!isRegister && (
-          <label className="check">
-            <input type="checkbox" {...register("remember")} /> Keep me signed
-            in
-          </label>
-        )}
-        {!isRegister && (
-          <p className="switch">
-            <Link to="/forgot-password">Forgot password?</Link>
-          </p>
+          <div className="auth-options">
+            <label className="check">
+              <input type="checkbox" {...register("remember")} /> Keep me
+              signed in
+            </label>
+            <Link className="forgot-link" to="/forgot-password">
+              Forgot password?
+            </Link>
+          </div>
         )}
         <button disabled={isSubmitting} className="btn primary" type="submit">
           {isSubmitting
